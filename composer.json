@@ -1,0 +1,62 @@
+{
+  "name": "mimmi20/template",
+  "description": "Provides a GitHub repository template for a PHP library, using GitHub actions.",
+  "license": "MIT",
+  "type": "library",
+  "authors": [
+    {
+      "name": "Thomas Müller",
+      "homepage": "https://github.com/mimmi20",
+      "role": "Developer"
+    },
+    {
+      "name": "Contributors",
+      "homepage": "https://github.com/mimmi20/template/graphs/contributors"
+    }
+  ],
+  "homepage": "https://github.com/mimmi20/template",
+  "support": {
+    "issues": "https://github.com/mimmi20/template/issues",
+    "source": "https://github.com/mimmi20/template"
+  },
+  "require": {
+    "php": "~8.3.0 || ~8.4.0 || ~8.5.0",
+    "ext-mbstring": "*"
+  },
+  "require-dev": {
+    "ext-ctype": "*",
+    "ext-dom": "*",
+    "ext-simplexml": "*",
+    "ext-tokenizer": "*",
+    "ext-xml": "*",
+    "ext-xmlwriter": "*",
+    "infection/infection": "^0.29.10",
+    "mimmi20/coding-standard": "^6.0.10",
+    "nikic/php-parser": "^5.4.0",
+    "phpstan/extension-installer": "^1.4.3",
+    "phpstan/phpstan": "^2.1.2",
+    "phpstan/phpstan-deprecation-rules": "^2.0.1",
+    "phpstan/phpstan-phpunit": "^2.0.4",
+    "phpunit/phpunit": "^11.5.7",
+    "rector/rector": "^2.0.8",
+    "rector/type-perfect": "^2.0.2",
+    "shipmonk/composer-dependency-analyser": "^1.8.2",
+    "symfony/process": "^7.2.0",
+    "symplify/phpstan-rules": "^14.2.7",
+    "tomasvotruba/cognitive-complexity": "^1.0.0",
+    "tomasvotruba/type-coverage": "^2.0.2",
+    "tomasvotruba/unused-public": "^2.0.0"
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "infection/extension-installer": true,
+      "phpstan/extension-installer": true
+    },
+    "lock": false,
+    "preferred-install": "dist",
+    "sort-packages": true
+  }
+}
