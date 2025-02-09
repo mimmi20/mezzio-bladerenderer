@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This file is part of the mimmi20/blade-renderer package.
+ * This file is part of the mimmi20/mezzio-bladerenderer package.
  *
- * Copyright (c) 2024-2025, Thomas Mueller <mimmi20@live.de>
+ * Copyright (c) 2025, Thomas Mueller <mimmi20@live.de>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -13,14 +13,19 @@ declare(strict_types = 1);
 
 namespace Mimmi20\Mezzio\BladeRenderer\Renderer;
 
+use Illuminate\Events\Dispatcher;
+use Illuminate\View\Compilers\BladeCompiler;
+use Illuminate\View\Component;
+use Illuminate\View\Engines\CompilerEngine;
+use Illuminate\View\Engines\EngineResolver;
+use Illuminate\View\Engines\FileEngine;
+use Illuminate\View\Engines\PhpEngine;
+use Illuminate\View\Factory;
+use Illuminate\View\FileViewFinder;
 use Mimmi20\Mezzio\BladeRenderer\Engine\LaminasEngine;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-
-use function array_key_exists;
-use function is_array;
-use function is_string;
 
 final class BladeRendererFactory
 {
@@ -32,15 +37,48 @@ final class BladeRendererFactory
     {
         $rendererContainer = $container->get(Container::class);
         $laminasEngine     = $container->get(LaminasEngine::class);
+        $resolver          = $container->get(EngineResolver::class);
 
-        $config = $container->has('config') ? $container->get('config') : [];
-        $config = is_array($config) && array_key_exists('templates', $config) && is_array($config['templates'])
-            ? $config['templates']
-            : [];
+        $resolver->register(
+            engine: 'file',
+            resolver: static fn (): FileEngine => $container->get(FileEngine::class),
+        );
 
-        $allPaths  = isset($config['paths']) && is_array($config['paths']) ? $config['paths'] : [];
-        $cachePath = isset($config['cache-path']) && is_string($config['cache-path']) ? $config['cache-path'] : '';
+        $resolver->register(
+            engine: 'php',
+            resolver: static fn (): PhpEngine => $container->get(PhpEngine::class),
+        );
 
-        return new BladeRenderer(viewPaths: $allPaths, cachePath: $cachePath, laminasEngine: $laminasEngine, container: $rendererContainer);
+        $resolver->register(
+            engine: 'blade',
+            resolver: static fn (): CompilerEngine => $container->get(CompilerEngine::class),
+        );
+
+        $fileViewFinder = $container->get(FileViewFinder::class);
+
+        $factory = new Factory(
+            engines: $resolver,
+            finder: $fileViewFinder,
+            events: new Dispatcher($rendererContainer),
+        );
+        $factory->addExtension(
+            extension: 'phtml',
+            engine: 'LaminasEngine',
+            resolver: static fn () => $laminasEngine,
+        );
+
+        $factory->setContainer($rendererContainer);
+
+        $factory->share('app', $rendererContainer);
+
+        $rendererContainer->terminating(static function (): void {
+            Component::forgetFactory();
+        });
+
+        return new BladeRenderer(
+            factory: $factory,
+            compiler: $container->get(BladeCompiler::class),
+            finder: $fileViewFinder,
+        );
     }
 }

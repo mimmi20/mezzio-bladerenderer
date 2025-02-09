@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This file is part of the mimmi20/blade-renderer package.
+ * This file is part of the mimmi20/mezzio-bladerenderer package.
  *
- * Copyright (c) 2024-2025, Thomas Mueller <mimmi20@live.de>
+ * Copyright (c) 2025, Thomas Mueller <mimmi20@live.de>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -13,66 +13,43 @@ declare(strict_types = 1);
 
 namespace Mimmi20\Mezzio\BladeRenderer\Renderer;
 
-use Illuminate\Config\Repository;
-use Illuminate\Contracts\Container\Container as ContainerInterface;
-use Illuminate\Contracts\Foundation\Application;
+use Closure;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\View\View;
-use Illuminate\Events\Dispatcher;
-use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Facades\Facade;
 use Illuminate\View\Compilers\BladeCompiler;
 use Illuminate\View\Factory;
-use Illuminate\View\ViewServiceProvider;
+use Illuminate\View\FileViewFinder;
+use InvalidArgumentException;
 use Mezzio\Template\ArrayParametersTrait;
 use Mezzio\Template\DefaultParamsTrait;
 use Mezzio\Template\TemplatePath;
 use Mezzio\Template\TemplateRendererInterface;
-use Mimmi20\Mezzio\BladeRenderer\Engine\LaminasEngine;
 use Override;
+
+use function is_string;
 
 final class BladeRenderer implements TemplateRendererInterface
 {
     use ArrayParametersTrait;
     use DefaultParamsTrait;
 
-    /**
-     * @var Application
-     */
-    protected $container;
-
-    /**
-     * @var Factory
-     */
-    private $factory;
-
-    /**
-     * @var BladeCompiler
-     */
-    private $compiler;
-
     /** @throws void */
-    public function __construct(array $viewPaths, string $cachePath, LaminasEngine $laminasEngine, ContainerInterface $container = null)
+    public function __construct(
+        private readonly Factory $factory,
+        private readonly BladeCompiler $compiler,
+        private readonly FileViewFinder $finder,
+    ) {
+        // nothing to do
+    }
+
+    /**
+     * @param array<mixed> $params
+     *
+     * @throws void
+     */
+    public function __call(string $method, array $params): mixed
     {
-        $this->container = $container ?: new Container();
-
-        $this->container->bindIf('files', fn () => new Filesystem);
-        $this->container->bindIf('events', fn () => new Dispatcher);
-        $this->container->bindIf('config', fn () => new Repository([
-            'view.paths' => $viewPaths,
-            'view.compiled' => $cachePath,
-        ]));
-
-        Facade::setFacadeApplication($this->container);
-        (new ViewServiceProvider($this->container))->register();
-
-        $this->factory = $this->container->get('view');
-        $this->factory->addExtension(
-            extension: 'phtml',
-            engine: 'LaminasEngine',
-            resolver: function() use($laminasEngine) {return $laminasEngine;},
-        );
-
-        $this->compiler = $this->container->get('blade.compiler');
+        return $this->factory->{$method}(...$params);
     }
 
     /**
@@ -81,7 +58,11 @@ final class BladeRenderer implements TemplateRendererInterface
      * Implementations MUST support the `namespace::template` naming convention,
      * and allow omitting the filename extension.
      *
-     * @param array|object $params
+     * @param array<mixed>|object $params
+     *
+     * @throws \Mezzio\Template\Exception\InvalidArgumentException
+     *
+     * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      */
     #[Override]
     public function render(string $name, $params = []): string
@@ -96,15 +77,19 @@ final class BladeRenderer implements TemplateRendererInterface
     }
 
     /**
-     * @param string $path
-     * @param string|null $namespace
-     * @return void
+     * Add a template path to the engine.
+     *
+     * Adds a template path, with optional namespace the templates in that path
+     * provide.
+     *
      * @throws void
+     *
+     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
     #[Override]
-    public function addPath(string $path, ?string $namespace = null): void
+    public function addPath(string $path, string | null $namespace = null): void
     {
-        $this->factory->getFinder()->addLocation($path);
+        $this->finder->addLocation($path);
     }
 
     /**
@@ -119,7 +104,11 @@ final class BladeRenderer implements TemplateRendererInterface
     {
         $paths = [];
 
-        foreach ($this->factory->getFinder()->getPaths() as $path) {
+        foreach ($this->finder->getPaths() as $path) {
+            if (!is_string($path)) {
+                continue;
+            }
+
             $paths[] = new TemplatePath($path);
         }
 
@@ -127,7 +116,9 @@ final class BladeRenderer implements TemplateRendererInterface
     }
 
     /**
-     * @return BladeCompiler
+     * @throws void
+     *
+     * @api
      */
     public function compiler(): BladeCompiler
     {
@@ -137,12 +128,11 @@ final class BladeRenderer implements TemplateRendererInterface
     /**
      * Register a handler for custom directives.
      *
-     * @param  string  $name
-     * @param  callable  $handler
-     * @param  bool  $bind
-     * @return void
+     * @param (callable(): string) $handler
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
+     *
+     * @api
      */
     public function directive(string $name, callable $handler): void
     {
@@ -152,11 +142,13 @@ final class BladeRenderer implements TemplateRendererInterface
     /**
      * Register an "if" statement directive.
      *
-     * @param  string  $name
-     * @param  callable  $callback
-     * @return void
+     * @param (callable(): bool) $callback
+     *
+     * @throws void
+     *
+     * @api
      */
-    public function if($name, callable $callback): void
+    public function if(string $name, callable $callback): void
     {
         $this->compiler->if($name, $callback);
     }
@@ -164,8 +156,9 @@ final class BladeRenderer implements TemplateRendererInterface
     /**
      * Determine if a given view exists.
      *
-     * @param  string  $view
-     * @return bool
+     * @throws void
+     *
+     * @api
      */
     public function exists(string $view): bool
     {
@@ -175,12 +168,14 @@ final class BladeRenderer implements TemplateRendererInterface
     /**
      * Get the evaluated view contents for the given view.
      *
-     * @param  string  $path
-     * @param  \Illuminate\Contracts\Support\Arrayable|array  $data
-     * @param  array  $mergeData
-     * @return \Illuminate\Contracts\View\View
+     * @param array<int|string, mixed>|Arrayable<int|string, mixed> $data
+     * @param array<mixed>                                          $mergeData
+     *
+     * @throws void
+     *
+     * @api
      */
-    public function file($path, $data = [], $mergeData = []): View
+    public function file(string $path, Arrayable | array $data = [], array $mergeData = []): View
     {
         return $this->factory->file($path, $data, $mergeData);
     }
@@ -188,11 +183,13 @@ final class BladeRenderer implements TemplateRendererInterface
     /**
      * Add a piece of shared data to the environment.
      *
-     * @param  array|string  $key
-     * @param  mixed|null  $value
-     * @return mixed
+     * @param array<mixed>|string $key
+     *
+     * @throws void
+     *
+     * @api
      */
-    public function share($key, $value = null)
+    public function share(array | string $key, mixed $value = null): mixed
     {
         return $this->factory->share($key, $value);
     }
@@ -200,11 +197,16 @@ final class BladeRenderer implements TemplateRendererInterface
     /**
      * Register a view composer event.
      *
-     * @param  array|string  $views
-     * @param  \Closure|string  $callback
-     * @return array
+     * @param array<string>|string         $views
+     * @param (Closure(View): void)|string $callback
+     *
+     * @return array<mixed>
+     *
+     * @throws void
+     *
+     * @api
      */
-    public function composer($views, $callback): array
+    public function composer(array | string $views, Closure | string $callback): array
     {
         return $this->factory->composer($views, $callback);
     }
@@ -212,11 +214,16 @@ final class BladeRenderer implements TemplateRendererInterface
     /**
      * Register a view creator event.
      *
-     * @param  array|string  $views
-     * @param  \Closure|string  $callback
-     * @return array
+     * @param array<string>|string         $views
+     * @param (Closure(View): void)|string $callback
+     *
+     * @return array<mixed>
+     *
+     * @throws void
+     *
+     * @api
      */
-    public function creator($views, $callback): array
+    public function creator(array | string $views, Closure | string $callback): array
     {
         return $this->factory->creator($views, $callback);
     }
@@ -224,11 +231,13 @@ final class BladeRenderer implements TemplateRendererInterface
     /**
      * Add a new namespace to the loader.
      *
-     * @param  string  $namespace
-     * @param  string|array  $hints
-     * @return $this
+     * @param array<string>|string $hints
+     *
+     * @throws void
+     *
+     * @api
      */
-    public function addNamespace($namespace, $hints): self
+    public function addNamespace(string $namespace, string | array $hints): self
     {
         $this->factory->addNamespace($namespace, $hints);
 
@@ -238,11 +247,13 @@ final class BladeRenderer implements TemplateRendererInterface
     /**
      * Replace the namespace hints for the given namespace.
      *
-     * @param  string  $namespace
-     * @param  string|array  $hints
-     * @return $this
+     * @param array<string>|string $hints
+     *
+     * @throws void
+     *
+     * @api
      */
-    public function replaceNamespace($namespace, $hints): self
+    public function replaceNamespace(string $namespace, string | array $hints): self
     {
         $this->factory->replaceNamespace($namespace, $hints);
 
@@ -250,24 +261,14 @@ final class BladeRenderer implements TemplateRendererInterface
     }
 
     /**
-     * @param string $method
-     * @param array $params
-     * @return mixed
-     */
-    public function __call(string $method, array $params)
-    {
-        return call_user_func_array([$this->factory, $method], $params);
-    }
-
-    /**
      * Get the evaluated view contents for the given view.
      *
-     * @param  string  $view
-     * @param  \Illuminate\Contracts\Support\Arrayable|array  $data
-     * @param  array  $mergeData
-     * @return \Illuminate\Contracts\View\View
+     * @param array<int|string, mixed>|Arrayable<int|string, mixed> $data
+     * @param array<mixed>                                          $mergeData
+     *
+     * @throws void
      */
-    private function make($view, $data = [], $mergeData = []): View
+    private function make(string $view, Arrayable | array $data = [], array $mergeData = []): View
     {
         return $this->factory->make($view, $data, $mergeData);
     }

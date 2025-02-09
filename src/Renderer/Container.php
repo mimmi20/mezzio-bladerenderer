@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This file is part of the mimmi20/blade-renderer package.
+ * This file is part of the mimmi20/mezzio-bladerenderer package.
  *
- * Copyright (c) 2024-2025, Thomas Mueller <mimmi20@live.de>
+ * Copyright (c) 2025, Thomas Mueller <mimmi20@live.de>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -18,10 +18,12 @@ use Illuminate\Container\Container as BaseContainer;
 
 final class Container extends BaseContainer
 {
-    /** @var array<int, Closure> */
+    /** @var array<int, (Closure(): void)> */
     protected array $terminatingCallbacks = [];
 
     /**
+     * @param (Closure(): void) $callback
+     *
      * @throws void
      *
      * @api

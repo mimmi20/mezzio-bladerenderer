@@ -11,23 +11,24 @@
 
 declare(strict_types = 1);
 
-namespace Mimmi20\Mezzio\BladeRenderer\Engine;
+namespace Mimmi20\Mezzio\BladeRenderer\Events;
 
-use Laminas\View\Renderer\PhpRenderer;
+use Illuminate\Events\Dispatcher;
+use Mimmi20\Mezzio\BladeRenderer\Renderer\Container;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-final class LaminasEngineFactory
+final class DispatcherFactory
 {
     /**
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function __invoke(ContainerInterface $container): LaminasEngine
+    public function __invoke(ContainerInterface $container): Dispatcher
     {
-        $renderer = $container->get(PhpRenderer::class);
+        $rendererContainer = $container->get(Container::class);
 
-        return new LaminasEngine($renderer);
+        return new Dispatcher($rendererContainer);
     }
 }

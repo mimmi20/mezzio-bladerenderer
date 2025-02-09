@@ -13,21 +13,22 @@ declare(strict_types = 1);
 
 namespace Mimmi20\Mezzio\BladeRenderer\Engine;
 
-use Laminas\View\Renderer\PhpRenderer;
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\View\Engines\FileEngine;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
-final class LaminasEngineFactory
+final class FileEngineFactory
 {
     /**
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function __invoke(ContainerInterface $container): LaminasEngine
+    public function __invoke(ContainerInterface $container): FileEngine
     {
-        $renderer = $container->get(PhpRenderer::class);
+        $filesystem = $container->get(Filesystem::class);
 
-        return new LaminasEngine($renderer);
+        return new FileEngine($filesystem);
     }
 }

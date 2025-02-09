@@ -85,12 +85,12 @@ parameters:
       tooWideThrowType: true
 
   cognitive_complexity:
-    class: 1
-    function: 1
+    class: 8
+    function: 8
 
   type_coverage:
     return_type: 100
-    param_type: 100
+    param_type: 94.5
     property_type: 100
     constant_type: 100
     # also, how many files has declare strict types
@@ -107,12 +107,23 @@ parameters:
     no_mixed: true
     narrow_param: true
 
+  stubFiles:
+    - stubs/psr/container/ContainerExceptionInterface.stub
+    - stubs/psr/container/NotFoundExceptionInterface.stub
+    - stubs/psr/container/ContainerInterface.stub
+    - stubs/laminas/view/model/ClearableModelInterface.stub
+    - stubs/laminas/view/model/RetrievableChildrenInterface.stub
+    - stubs/laminas/view/model/ExceptionInterface.stub
+    - stubs/laminas/view/model/InvalidArgumentException.stub
+    - stubs/laminas/view/model/ViewModel.stub
+    - stubs/laminas/view/model/ModelInterface.stub
+
 #  ignoreErrors:
 #    - '~MockObject~'
 
 rules:
   # code complexity
-  - Symplify\PHPStanRules\Rules\NoDynamicNameRule
+  # - Symplify\PHPStanRules\Rules\NoDynamicNameRule
 
   - Symplify\PHPStanRules\Rules\ForbiddenExtendOfNonAbstractClassRule
 

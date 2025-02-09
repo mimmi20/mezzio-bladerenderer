@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This file is part of the mimmi20/blade-renderer package.
+ * This file is part of the mimmi20/mezzio-bladerenderer package.
  *
- * Copyright (c) 2024-2025, Thomas Mueller <mimmi20@live.de>
+ * Copyright (c) 2025, Thomas Mueller <mimmi20@live.de>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -16,7 +16,6 @@ namespace Mimmi20\Mezzio\BladeRenderer;
 use Mimmi20\Mezzio\BladeRenderer\Engine\LaminasEngine;
 use Mimmi20\Mezzio\BladeRenderer\Renderer\BladeRenderer;
 use Mimmi20\Mezzio\BladeRenderer\Renderer\Container;
-use Mimmi20\Mezzio\BladeRenderer\Strategy\BladeStrategy;
 use Override;
 use PHPUnit\Framework\Exception;
 use PHPUnit\Framework\TestCase;
