@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of the mimmi20/template package.
+ * This file is part of the mimmi20/mezzio-bladerenderer package.
  *
  * Copyright (c) 2020-2025, Thomas Mueller <mimmi20@live.de>
  *

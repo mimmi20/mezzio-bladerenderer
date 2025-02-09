@@ -33,6 +33,9 @@ updates:
       include: "scope"
       prefix: "composer"
 
+    ignore:
+      - dependency-name: "psr/container"
+
     rebase-strategy: "auto"
 
   - package-ecosystem: "github-actions"

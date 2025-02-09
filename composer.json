@@ -1,8 +1,16 @@
 {
-  "name": "mimmi20/template",
-  "description": "Provides a GitHub repository template for a PHP library, using GitHub actions.",
+  "name": "mimmi20/mezzio-bladerenderer",
+  "description": "Blade integration for Mezzio",
   "license": "MIT",
   "type": "library",
+  "keywords": [
+    "laravel",
+    "blade",
+    "template",
+    "view",
+    "render",
+    "mezzio"
+  ],
   "authors": [
     {
       "name": "Thomas Müller",
@@ -11,17 +19,26 @@
     },
     {
       "name": "Contributors",
-      "homepage": "https://github.com/mimmi20/template/graphs/contributors"
+      "homepage": "https://github.com/mimmi20/mezzio-bladerenderer/graphs/contributors"
     }
   ],
-  "homepage": "https://github.com/mimmi20/template",
+  "homepage": "https://github.com/mimmi20/mezzio-bladerenderer",
   "support": {
-    "issues": "https://github.com/mimmi20/template/issues",
-    "source": "https://github.com/mimmi20/template"
+    "issues": "https://github.com/mimmi20/mezzio-bladerenderer/issues",
+    "source": "https://github.com/mimmi20/mezzio-bladerenderer"
   },
   "require": {
     "php": "~8.3.0 || ~8.4.0 || ~8.5.0",
-    "ext-mbstring": "*"
+    "ext-mbstring": "*",
+    "illuminate/config": "^11.41.3",
+    "illuminate/container": "^11.41.3",
+    "illuminate/view": "^11.41.3",
+    "laminas/laminas-servicemanager": "^3.22.1",
+    "laminas/laminas-view": "^2.36.0",
+    "mezzio/mezzio-helpers": "^5.0",
+    "mezzio/mezzio-router": "^3.7",
+    "mezzio/mezzio-template": "^2.0",
+    "psr/container": "^1.0 || ^2.0"
   },
   "require-dev": {
     "ext-ctype": "*",
@@ -49,6 +66,16 @@
   },
   "minimum-stability": "stable",
   "prefer-stable": true,
+  "autoload": {
+    "psr-4": {
+      "Mimmi20\\Mezzio\\BladeRenderer\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Mimmi20\\Mezzio\\BladeRenderer\\": "tests/"
+    }
+  },
   "config": {
     "allow-plugins": {
       "dealerdirect/phpcodesniffer-composer-installer": true,
@@ -58,5 +85,10 @@
     "lock": false,
     "preferred-install": "dist",
     "sort-packages": true
+  },
+  "extra": {
+    "laminas": {
+      "config-provider": "Mimmi20\\Mezzio\\BladeRenderer\\ConfigProvider"
+    }
   }
 }
