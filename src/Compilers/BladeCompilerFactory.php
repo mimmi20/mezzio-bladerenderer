@@ -17,6 +17,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\Compilers\BladeCompiler;
 use Illuminate\View\DynamicComponent;
 use InvalidArgumentException;
+use Laminas\ServiceManager\Exception\ServiceNotCreatedException;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -31,6 +32,7 @@ final class BladeCompilerFactory
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      * @throws InvalidArgumentException
+     * @throws ServiceNotCreatedException
      */
     public function __invoke(ContainerInterface $container): BladeCompiler
     {
@@ -50,9 +52,17 @@ final class BladeCompilerFactory
         $cachePath   = '';
         $shouldCache = false;
 
-        if (isset($templateConfig['cache-path']) && is_string($templateConfig['cache-path'])) {
+        if (
+            array_key_exists('cache-path', $templateConfig)
+            && is_string($templateConfig['cache-path'])
+            && $templateConfig['cache-path'] !== ''
+        ) {
             $cachePath   = $templateConfig['cache-path'];
             $shouldCache = true;
+        }
+
+        if ($cachePath === '') {
+            throw new ServiceNotCreatedException('a cache path is required');
         }
 
         $blade = new BladeCompiler(
@@ -60,7 +70,7 @@ final class BladeCompilerFactory
             cachePath: $cachePath,
             shouldCache: $shouldCache,
         );
-        $blade->component('dynamic-component', DynamicComponent::class);
+        $blade->component(DynamicComponent::class, 'dynamic-component');
 
         return $blade;
     }

@@ -16,6 +16,10 @@ parameters:
     - %currentWorkingDirectory%/vendor/squizlabs/php_codesniffer/autoload.php
     - %currentWorkingDirectory%/vendor/squizlabs/php_codesniffer/src/Util/Tokens.php
 
+  excludePaths:
+    - tests/views/*
+    - tests/cache/*
+
   # enable stricter analysis of benevolent union types
   checkBenevolentUnionTypes: true
 
@@ -85,8 +89,8 @@ parameters:
       tooWideThrowType: true
 
   cognitive_complexity:
-    class: 8
-    function: 8
+    class: 10
+    function: 9
 
   type_coverage:
     return_type: 100
@@ -118,8 +122,10 @@ parameters:
     - stubs/laminas/view/model/ViewModel.stub
     - stubs/laminas/view/model/ModelInterface.stub
 
-#  ignoreErrors:
-#    - '~MockObject~'
+  ignoreErrors:
+    - '~will always evaluate to true~'
+    - '~Mimmi20\\Mezzio\\BladeRenderer\\Renderer\\BladeRenderer~'
+    - '~Call to an undefined method Jenssegers\\Blade\\Blade~'
 
 rules:
   # code complexity

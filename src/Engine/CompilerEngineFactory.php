@@ -16,7 +16,6 @@ namespace Mimmi20\Mezzio\BladeRenderer\Engine;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\Compilers\BladeCompiler;
 use Illuminate\View\Engines\CompilerEngine;
-use Mimmi20\Mezzio\BladeRenderer\Renderer\Container;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -29,18 +28,11 @@ final class CompilerEngineFactory
      */
     public function __invoke(ContainerInterface $container): CompilerEngine
     {
-        $blade             = $container->get(BladeCompiler::class);
-        $rendererContainer = $container->get(Container::class);
+        $blade = $container->get(BladeCompiler::class);
 
-        $compiler = new CompilerEngine(
+        return new CompilerEngine(
             compiler: $blade,
             files: $container->get(Filesystem::class),
         );
-
-        $rendererContainer->terminating(static function () use ($compiler): void {
-            $compiler->forgetCompiledOrNotExpired();
-        });
-
-        return $compiler;
     }
 }

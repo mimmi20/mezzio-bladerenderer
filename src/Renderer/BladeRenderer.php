@@ -14,18 +14,18 @@ declare(strict_types = 1);
 namespace Mimmi20\Mezzio\BladeRenderer\Renderer;
 
 use Closure;
-use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Compilers\BladeCompiler;
-use Illuminate\View\Factory;
-use Illuminate\View\FileViewFinder;
-use InvalidArgumentException;
+use Jenssegers\Blade\Blade;
 use Mezzio\Template\ArrayParametersTrait;
 use Mezzio\Template\DefaultParamsTrait;
+use Mezzio\Template\Exception\InvalidArgumentException;
 use Mezzio\Template\TemplatePath;
 use Mezzio\Template\TemplateRendererInterface;
 use Override;
 
+use function assert;
+use function is_iterable;
 use function is_string;
 
 final class BladeRenderer implements TemplateRendererInterface
@@ -34,22 +34,9 @@ final class BladeRenderer implements TemplateRendererInterface
     use DefaultParamsTrait;
 
     /** @throws void */
-    public function __construct(
-        private readonly Factory $factory,
-        private readonly BladeCompiler $compiler,
-        private readonly FileViewFinder $finder,
-    ) {
-        // nothing to do
-    }
-
-    /**
-     * @param array<mixed> $params
-     *
-     * @throws void
-     */
-    public function __call(string $method, array $params): mixed
+    public function __construct(private readonly Blade $blade)
     {
-        return $this->factory->{$method}(...$params);
+        // nothing to do
     }
 
     /**
@@ -60,20 +47,14 @@ final class BladeRenderer implements TemplateRendererInterface
      *
      * @param array<mixed>|object $params
      *
-     * @throws \Mezzio\Template\Exception\InvalidArgumentException
+     * @throws InvalidArgumentException
      *
      * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      */
     #[Override]
     public function render(string $name, $params = []): string
     {
-        // Merge parameters based on requested template name
-        $params = $this->mergeParams($name, $this->normalizeParams($params));
-
-        // Merge parameters based on normalized template name
-        $params = $this->mergeParams($name, $params);
-
-        return $this->make($name, $params)->render();
+        return $this->blade->render($name, $this->normalizeParams($params));
     }
 
     /**
@@ -89,7 +70,7 @@ final class BladeRenderer implements TemplateRendererInterface
     #[Override]
     public function addPath(string $path, string | null $namespace = null): void
     {
-        $this->finder->addLocation($path);
+        $this->blade->addLocation($path);
     }
 
     /**
@@ -104,7 +85,10 @@ final class BladeRenderer implements TemplateRendererInterface
     {
         $paths = [];
 
-        foreach ($this->finder->getPaths() as $path) {
+        $bladePaths = $this->blade->getPaths();
+        assert(is_iterable($bladePaths));
+
+        foreach ($bladePaths as $path) {
             if (!is_string($path)) {
                 continue;
             }
@@ -116,68 +100,19 @@ final class BladeRenderer implements TemplateRendererInterface
     }
 
     /**
-     * @throws void
+     * Register a view composer event.
      *
-     * @api
-     */
-    public function compiler(): BladeCompiler
-    {
-        return $this->compiler;
-    }
-
-    /**
-     * Register a handler for custom directives.
+     * @param array<string>|string $views
      *
-     * @param (callable(): string) $handler
-     *
-     * @throws InvalidArgumentException
-     *
-     * @api
-     */
-    public function directive(string $name, callable $handler): void
-    {
-        $this->compiler->directive($name, $handler);
-    }
-
-    /**
-     * Register an "if" statement directive.
-     *
-     * @param (callable(): bool) $callback
+     * @return array<mixed>
      *
      * @throws void
      *
      * @api
      */
-    public function if(string $name, callable $callback): void
+    public function composer(array | string $views, Closure | string $callback): array
     {
-        $this->compiler->if($name, $callback);
-    }
-
-    /**
-     * Determine if a given view exists.
-     *
-     * @throws void
-     *
-     * @api
-     */
-    public function exists(string $view): bool
-    {
-        return $this->factory->exists($view);
-    }
-
-    /**
-     * Get the evaluated view contents for the given view.
-     *
-     * @param array<int|string, mixed>|Arrayable<int|string, mixed> $data
-     * @param array<mixed>                                          $mergeData
-     *
-     * @throws void
-     *
-     * @api
-     */
-    public function file(string $path, Arrayable | array $data = [], array $mergeData = []): View
-    {
-        return $this->factory->file($path, $data, $mergeData);
+        return $this->blade->composer($views, $callback);
     }
 
     /**
@@ -191,24 +126,19 @@ final class BladeRenderer implements TemplateRendererInterface
      */
     public function share(array | string $key, mixed $value = null): mixed
     {
-        return $this->factory->share($key, $value);
+        return $this->blade->share($key, $value);
     }
 
     /**
-     * Register a view composer event.
-     *
-     * @param array<string>|string         $views
-     * @param (Closure(View): void)|string $callback
-     *
-     * @return array<mixed>
+     * Determine if a given view exists.
      *
      * @throws void
      *
      * @api
      */
-    public function composer(array | string $views, Closure | string $callback): array
+    public function exists(string $view): bool
     {
-        return $this->factory->composer($views, $callback);
+        return $this->blade->exists($view);
     }
 
     /**
@@ -225,51 +155,16 @@ final class BladeRenderer implements TemplateRendererInterface
      */
     public function creator(array | string $views, Closure | string $callback): array
     {
-        return $this->factory->creator($views, $callback);
+        return $this->blade->creator($views, $callback);
     }
 
     /**
-     * Add a new namespace to the loader.
-     *
-     * @param array<string>|string $hints
-     *
      * @throws void
      *
      * @api
      */
-    public function addNamespace(string $namespace, string | array $hints): self
+    public function compiler(): BladeCompiler
     {
-        $this->factory->addNamespace($namespace, $hints);
-
-        return $this;
-    }
-
-    /**
-     * Replace the namespace hints for the given namespace.
-     *
-     * @param array<string>|string $hints
-     *
-     * @throws void
-     *
-     * @api
-     */
-    public function replaceNamespace(string $namespace, string | array $hints): self
-    {
-        $this->factory->replaceNamespace($namespace, $hints);
-
-        return $this;
-    }
-
-    /**
-     * Get the evaluated view contents for the given view.
-     *
-     * @param array<int|string, mixed>|Arrayable<int|string, mixed> $data
-     * @param array<mixed>                                          $mergeData
-     *
-     * @throws void
-     */
-    private function make(string $view, Arrayable | array $data = [], array $mergeData = []): View
-    {
-        return $this->factory->make($view, $data, $mergeData);
+        return $this->blade->compiler();
     }
 }
