@@ -34,7 +34,7 @@
     "illuminate/container": "^11.41.3",
     "illuminate/contracts": "^11.42.1",
     "illuminate/events": "^11.42.0",
-    "illuminate/filesystem": "^11.41.3",
+    "illuminate/filesystem": "^11.42.1",
     "illuminate/support": "^11.42.1",
     "illuminate/view": "^11.41.3",
     "laminas/laminas-servicemanager": "^3.22.1",
