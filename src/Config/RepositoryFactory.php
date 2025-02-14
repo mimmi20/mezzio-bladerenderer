@@ -24,7 +24,10 @@ use function is_string;
 
 final class RepositoryFactory
 {
-    /** @throws ContainerExceptionInterface */
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws ServiceNotCreatedException
+     */
     public function __invoke(ContainerInterface $container): Repository
     {
         $config         = $container->has('config') ? $container->get('config') : [];
