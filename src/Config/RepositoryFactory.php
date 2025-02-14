@@ -14,6 +14,7 @@ declare(strict_types = 1);
 namespace Mimmi20\Mezzio\BladeRenderer\Config;
 
 use Illuminate\Config\Repository;
+use Laminas\ServiceManager\Exception\ServiceNotCreatedException;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 
@@ -45,6 +46,10 @@ final class RepositoryFactory
             && $templateConfig['cache-path'] !== ''
         ) {
             $cachePath = $templateConfig['cache-path'];
+        }
+
+        if ($cachePath === '') {
+            throw new ServiceNotCreatedException('a cache path is required');
         }
 
         $allPaths = isset($templateConfig['paths']) && is_array($templateConfig['paths'])

@@ -16,7 +16,8 @@ namespace Mimmi20\Mezzio\BladeRenderer\Renderer;
 use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Compilers\BladeCompiler;
-use Jenssegers\Blade\Blade;
+use Illuminate\View\Factory;
+use Illuminate\View\FileViewFinder;
 use Mezzio\Template\ArrayParametersTrait;
 use Mezzio\Template\DefaultParamsTrait;
 use Mezzio\Template\Exception\InvalidArgumentException;
@@ -34,8 +35,11 @@ final class BladeRenderer implements TemplateRendererInterface
     use DefaultParamsTrait;
 
     /** @throws void */
-    public function __construct(private readonly Blade $blade)
-    {
+    public function __construct(
+        private readonly Factory $factory,
+        private readonly BladeCompiler $compiler,
+        private readonly FileViewFinder $finder,
+    ) {
         // nothing to do
     }
 
@@ -54,7 +58,7 @@ final class BladeRenderer implements TemplateRendererInterface
     #[Override]
     public function render(string $name, $params = []): string
     {
-        return $this->blade->render($name, $this->normalizeParams($params));
+        return $this->factory->make($name, $this->normalizeParams($params))->render();
     }
 
     /**
@@ -70,7 +74,7 @@ final class BladeRenderer implements TemplateRendererInterface
     #[Override]
     public function addPath(string $path, string | null $namespace = null): void
     {
-        $this->blade->addLocation($path);
+        $this->finder->addLocation($path);
     }
 
     /**
@@ -85,7 +89,7 @@ final class BladeRenderer implements TemplateRendererInterface
     {
         $paths = [];
 
-        $bladePaths = $this->blade->getPaths();
+        $bladePaths = $this->finder->getPaths();
         assert(is_iterable($bladePaths));
 
         foreach ($bladePaths as $path) {
@@ -112,7 +116,7 @@ final class BladeRenderer implements TemplateRendererInterface
      */
     public function composer(array | string $views, Closure | string $callback): array
     {
-        return $this->blade->composer($views, $callback);
+        return $this->factory->composer($views, $callback);
     }
 
     /**
@@ -126,7 +130,7 @@ final class BladeRenderer implements TemplateRendererInterface
      */
     public function share(array | string $key, mixed $value = null): mixed
     {
-        return $this->blade->share($key, $value);
+        return $this->factory->share($key, $value);
     }
 
     /**
@@ -138,7 +142,7 @@ final class BladeRenderer implements TemplateRendererInterface
      */
     public function exists(string $view): bool
     {
-        return $this->blade->exists($view);
+        return $this->factory->exists($view);
     }
 
     /**
@@ -155,7 +159,7 @@ final class BladeRenderer implements TemplateRendererInterface
      */
     public function creator(array | string $views, Closure | string $callback): array
     {
-        return $this->blade->creator($views, $callback);
+        return $this->factory->creator($views, $callback);
     }
 
     /**
@@ -165,6 +169,6 @@ final class BladeRenderer implements TemplateRendererInterface
      */
     public function compiler(): BladeCompiler
     {
-        return $this->blade->compiler();
+        return $this->compiler;
     }
 }
