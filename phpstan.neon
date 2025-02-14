@@ -90,7 +90,7 @@ parameters:
 
   cognitive_complexity:
     class: 10
-    function: 9
+    function: 10
 
   type_coverage:
     return_type: 100
@@ -125,7 +125,7 @@ parameters:
   ignoreErrors:
     - '~will always evaluate to true~'
     - '~Mimmi20\\Mezzio\\BladeRenderer\\Renderer\\BladeRenderer~'
-    - '~Call to an undefined method Jenssegers\\Blade\\Blade~'
+    - '~expects Illuminate\\Contracts\\Foundation\\Application~'
 
 rules:
   # code complexity

@@ -37,7 +37,6 @@
     "illuminate/filesystem": "^11.41.3",
     "illuminate/support": "^11.42.0",
     "illuminate/view": "^11.41.3",
-    "jenssegers/blade": "^2.0.1",
     "laminas/laminas-servicemanager": "^3.22.1",
     "laminas/laminas-view": "^2.36.0",
     "mezzio/mezzio-helpers": "^5.17.0",

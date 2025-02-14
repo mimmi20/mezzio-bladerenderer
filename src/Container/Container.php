@@ -11,7 +11,7 @@
 
 declare(strict_types = 1);
 
-namespace Mimmi20\Mezzio\BladeRenderer\Renderer;
+namespace Mimmi20\Mezzio\BladeRenderer\Container;
 
 use Closure;
 use Illuminate\Container\Container as BaseContainer;

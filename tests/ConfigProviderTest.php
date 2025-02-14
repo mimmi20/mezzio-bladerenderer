@@ -13,9 +13,8 @@ declare(strict_types = 1);
 
 namespace Mimmi20\Mezzio\BladeRenderer;
 
-use Mimmi20\Mezzio\BladeRenderer\Engine\LaminasEngine;
+use Mimmi20\Mezzio\BladeRenderer\Container\Container;
 use Mimmi20\Mezzio\BladeRenderer\Renderer\BladeRenderer;
-use Mimmi20\Mezzio\BladeRenderer\Renderer\Container;
 use Override;
 use PHPUnit\Framework\Exception;
 use PHPUnit\Framework\TestCase;
@@ -42,7 +41,6 @@ final class ConfigProviderTest extends TestCase
         self::assertIsArray($factories);
         self::assertArrayHasKey(BladeRenderer::class, $factories);
         self::assertArrayHasKey(Container::class, $factories);
-        self::assertArrayHasKey(LaminasEngine::class, $factories);
 
         self::assertArrayHasKey('aliases', $dependencies);
         $aliases = $dependencies['aliases'];
@@ -77,7 +75,6 @@ final class ConfigProviderTest extends TestCase
         self::assertIsArray($factories);
         self::assertArrayHasKey(BladeRenderer::class, $factories);
         self::assertArrayHasKey(Container::class, $factories);
-        self::assertArrayHasKey(LaminasEngine::class, $factories);
 
         self::assertArrayHasKey('aliases', $dependencies);
         $aliases = $dependencies['aliases'];
