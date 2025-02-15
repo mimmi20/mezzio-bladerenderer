@@ -254,5 +254,37 @@ final class RepositoryFactoryTest extends TestCase
         $result = ($this->factory)($container);
 
         self::assertInstanceOf(Repository::class, $result);
+
+        self::assertSame($cachePath, $result->get('view.compiled'));
+        self::assertSame([], $result->get('view.paths'));
+    }
+
+    /**
+     * @throws Exception
+     * @throws ContainerExceptionInterface
+     * @throws ReflectionException
+     * @throws InvalidArgumentException
+     */
+    public function testInvocation2(): void
+    {
+        $cachePath = 'tests/cache';
+        $allPaths  = ['abc' => 'def'];
+
+        $container = $this->createMock(ContainerInterface::class);
+        $container->expects(self::once())
+            ->method('get')
+            ->with('config')
+            ->willReturn(['templates' => ['cache-path' => $cachePath, 'paths' => $allPaths]]);
+        $container->expects(self::once())
+            ->method('has')
+            ->with('config')
+            ->willReturn(true);
+
+        $result = ($this->factory)($container);
+
+        self::assertInstanceOf(Repository::class, $result);
+
+        self::assertSame($cachePath, $result->get('view.compiled'));
+        self::assertSame($allPaths, $result->get('view.paths'));
     }
 }
