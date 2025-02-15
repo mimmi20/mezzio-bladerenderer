@@ -31,7 +31,7 @@
     "php": "~8.3.0 || ~8.4.0 || ~8.5.0",
     "ext-mbstring": "*",
     "illuminate/config": "^11.42.1",
-    "illuminate/container": "^11.41.3",
+    "illuminate/container": "^11.42.1",
     "illuminate/contracts": "^11.42.1",
     "illuminate/events": "^11.42.1",
     "illuminate/filesystem": "^11.42.1",
