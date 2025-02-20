@@ -32,7 +32,7 @@
     "ext-mbstring": "*",
     "illuminate/config": "^11.42.1",
     "illuminate/container": "^11.42.1",
-    "illuminate/contracts": "^11.42.1",
+    "illuminate/contracts": "^11.43.2",
     "illuminate/events": "^11.43.2",
     "illuminate/filesystem": "^11.43.2",
     "illuminate/support": "^11.43.2",
