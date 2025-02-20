@@ -36,7 +36,7 @@
     "illuminate/events": "^11.42.1",
     "illuminate/filesystem": "^11.43.2",
     "illuminate/support": "^11.42.1",
-    "illuminate/view": "^11.42.1",
+    "illuminate/view": "^11.43.2",
     "laminas/laminas-servicemanager": "^3.22.1",
     "laminas/laminas-view": "^2.36.0",
     "mezzio/mezzio-helpers": "^5.17.0",
